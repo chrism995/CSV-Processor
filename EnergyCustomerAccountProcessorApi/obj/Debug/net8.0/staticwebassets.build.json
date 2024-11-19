@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "jXME3gewE4thX0Cj+Lmf4xmmqKXp5r2EpQRxe+4GFK8=",
+  "Source": "EnergyCustomerAccountProcessorApi",
+  "BasePath": "_content/EnergyCustomerAccountProcessorApi",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
