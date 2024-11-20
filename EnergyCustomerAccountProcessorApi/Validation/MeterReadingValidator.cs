@@ -33,14 +33,32 @@ namespace EnergyCustomerAccountProcessorApi.Validation
                 return false;
             }
 
-            // Ensure the entry is unique
-            var duplicateExists = await _context.MeterReadings.AnyAsync(m =>
-                m.AccountId == meterReading.AccountId &&
-                m.MeterReadingDateTime == meterReading.MeterReadingDateTime &&
-                m.MeterReadValue == meterReading.MeterReadValue);
+            // Check if the meter reading already exists
+            var existingMeterReading = await _context.MeterReadings
+                .FirstOrDefaultAsync(m => m.AccountId == meterReading.AccountId);
 
-            if (duplicateExists)
+            if (existingMeterReading != null)
             {
+                // If found, update the existing record (e.g., update MeterReadValue)
+                existingMeterReading.MeterReadValue = meterReading.MeterReadValue;
+
+                // You can perform any other updates to the existing record here, if necessary
+                _context.MeterReadings.Update(existingMeterReading);
+            }
+            else
+            {
+                // If not found, add a new record
+                await _context.MeterReadings.AddAsync(meterReading);
+            }
+
+            try
+            {
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                // Log or handle the exception if necessary
                 return false;
             }
 

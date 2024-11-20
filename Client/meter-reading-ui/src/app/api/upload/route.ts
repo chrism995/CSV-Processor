@@ -3,6 +3,7 @@ import axios from "axios";
 
 export async function POST(request: NextRequest) {
   try {
+    const apiUrl = `${process.env.CSV_API_BASE_URI}meter-reading-uploads`;
     const formData = new FormData();
     const file = await request.formData();
 
@@ -14,16 +15,9 @@ export async function POST(request: NextRequest) {
 
     formData.append("file", fileUpload);
 
-    const dotNetApiUrl =
-      "http://localhost:5106/api/MeterReadings/meter-reading-uploads";
-
-    const headers = {
-      "Content-Type": "multipart/form-data",
-    };
-
-    const response = await axios.post(dotNetApiUrl, formData, {
+    const response = await axios.post(apiUrl, formData, {
       headers: {
-        ...headers,
+        "Content-Type": "multipart/form-data",
       },
     });
 

@@ -1,16 +1,19 @@
 import { create } from "zustand";
 
+interface MeterReading {
+  accountId: number;
+  meterReadingDateTime: string;
+  meterReadValue: number;
+}
+
 interface MeterReadingState {
-  successCount: number | null;
-  failureCount: number | null;
-  setMeterReadingResult: (success: number, failure: number) => void;
+  meterReadings: MeterReading[];
+  setMeterReadings: (readings: MeterReading[]) => void;
 }
 
 const useMeterReadingStore = create<MeterReadingState>((set) => ({
-  successCount: null,
-  failureCount: null,
-  setMeterReadingResult: (success, failure) =>
-    set({ successCount: success, failureCount: failure }),
+  meterReadings: [],
+  setMeterReadings: (readings) => set({ meterReadings: readings }),
 }));
 
 export default useMeterReadingStore;

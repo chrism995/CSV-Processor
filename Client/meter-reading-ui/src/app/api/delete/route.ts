@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 
 export async function DELETE() {
-  const dotNetApiUrl = "http://localhost:5106/api/MeterReadings/delete-all";
+  const apiUrl = `${process.env.CSV_API_BASE_URI}delete-all`;
 
   return axios
-    .delete(dotNetApiUrl)
+    .delete(apiUrl)
     .then((response) => {
       if (response.status === 200) {
         return NextResponse.json(response.data, { status: 200 });

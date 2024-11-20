@@ -1,7 +1,11 @@
 "use client";
 import React, { useState } from "react";
+import useMeterReadingStore from "../store/meterReadingStore";
 
 export default function DeleteMeterReadingsButton() {
+  const setMeterReadings = useMeterReadingStore(
+    (state) => state.setMeterReadings
+  );
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -28,6 +32,7 @@ export default function DeleteMeterReadingsButton() {
       setMessage("Error deleting meter readings. Please try again.");
     } finally {
       setLoading(false);
+      setMeterReadings([]);
     }
   };
 
