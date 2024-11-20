@@ -63,7 +63,7 @@ const FileUpload = () => {
     }
   };
 
-  const showError = (message: string) => {
+  const showError: (message: string) => void = (message) => {
     alert(message);
   };
 
