@@ -75,8 +75,6 @@ namespace EnergyCustomerAccountProcessorApi.Services
                         failureCount++; 
                     }
                 }
-
-                await _context.SaveChangesAsync();
                 return (successCount, failureCount);
             }
             catch (CsvHelperException ex)

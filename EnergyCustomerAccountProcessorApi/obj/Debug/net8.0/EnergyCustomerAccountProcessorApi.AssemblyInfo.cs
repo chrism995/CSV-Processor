@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EnergyCustomerAccountProcessorApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b6b087c6e3744da61e0098ccd34bcb53dca93a9c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+19f4b417ed294eab94ccc74a3c4081c14f6471cd")]
 [assembly: System.Reflection.AssemblyProductAttribute("EnergyCustomerAccountProcessorApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EnergyCustomerAccountProcessorApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

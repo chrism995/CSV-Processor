@@ -39,19 +39,17 @@ namespace EnergyCustomerAccountProcessorApi.Validation
             return isSaved;
         }
 
-        // Method to validate if account exists
         private async Task<bool> IsAccountValidAsync(int accountId)
         {
             return await _context.Users.AnyAsync(u => u.AccountID == accountId);
         }
 
-        // Method to validate MeterReadValue format
         private bool IsMeterReadingValueValid(string meterReadValue)
         {
+            //The pattern @"^\d{5}$" checks if the string is exactly five digits long.
             return Regex.IsMatch(meterReadValue, @"^\d{5}$");
         }
 
-        // Method to save or update meter reading in the database
         private async Task<bool> SaveOrUpdateMeterReadingAsync(MeterReading meterReading)
         {
             var existingMeterReading = await _context.MeterReadings
