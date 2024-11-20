@@ -3,7 +3,7 @@ import axios from "axios";
 
 export async function GET() {
   try {
-    const apiUrl = `${process.env.CSV_API_BASE_URI}get`;
+    const apiUrl = `${process.env.CSV_API_BASE_URI}get-all`;
 
     const response = await axios.get(apiUrl, {
       headers: {
