@@ -3,7 +3,6 @@ using CsvHelper.Configuration;
 using EnergyCustomerAccountProcessorApi.Data;
 using EnergyCustomerAccountProcessorApi.Models;
 using EnergyCustomerAccountProcessorApi.Validation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 
@@ -20,6 +19,27 @@ namespace EnergyCustomerAccountProcessorApi.Services
             _validator = validator;
         }
 
+        public async Task<IEnumerable<MeterReading>> GetAllMeterReadingsAsync()
+        {
+            try
+            {
+                var meterReadings = await _context.MeterReadings.ToListAsync();
+                if (meterReadings == null || !meterReadings.Any())
+                {
+                    throw new InvalidOperationException("No meter readings found.");
+                }
+                return meterReadings;
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new ApplicationException("Error fetching meter readings from the database.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"Error fetching meter readings: {ex.Message}", ex);
+            }
+        }
+
         public async Task<(int SuccessCount, int FailureCount)> ProcessMeterReadingsAsync(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -27,43 +47,73 @@ namespace EnergyCustomerAccountProcessorApi.Services
                 throw new ArgumentException("File cannot be null or empty.");
             }
 
-            using var stream = file.OpenReadStream();
-            using var reader = new StreamReader(stream);
-            using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
+            try
             {
-                HasHeaderRecord = true,
-                PrepareHeaderForMatch = args => args.Header.ToLower(), // Case-insensitive headers
-            });
-
-            // Register custom date converter for MeterReadingDateTime field
-            csv.Context.TypeConverterOptionsCache.GetOptions<DateTime>().Formats = new[] { "dd/MM/yyyy HH:mm" };
-
-            var records = csv.GetRecords<MeterReading>().ToList();
-
-            int successCount = 0, failureCount = 0;
-
-            foreach (var record in records)
-            {
-                // Validate each record asynchronously
-                if (await _validator.ValidateMeterReadingAsync(record))
+                using var stream = file.OpenReadStream();
+                using var reader = new StreamReader(stream);
+                using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
                 {
-                    successCount++;
+                    HasHeaderRecord = true,
+                    PrepareHeaderForMatch = args => args.Header.ToLower(), // Case-insensitive headers
+                });
+
+                // Custom date converter for MeterReadingDateTime field
+                csv.Context.TypeConverterOptionsCache.GetOptions<DateTime>().Formats = new[] { "dd/MM/yyyy HH:mm" };
+
+                var records = csv.GetRecords<MeterReading>().ToList();
+
+                int successCount = 0, failureCount = 0;
+
+                foreach (var record in records)
+                {                    
+                    if (await _validator.ValidateMeterReadingAsync(record))
+                    {
+                        successCount++;
+                    }
+                    else
+                    {
+                        failureCount++; 
+                    }
                 }
-                else                                                                                                                    
-                {
-                    failureCount++; // Increment failure count for invalid records
-                }
+
+                await _context.SaveChangesAsync();
+                return (successCount, failureCount);
             }
-
-            await _context.SaveChangesAsync();
-            return (successCount, failureCount);
+            catch (CsvHelperException ex)
+            {
+                throw new ApplicationException("Error reading the CSV file.", ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new ApplicationException("Error saving meter readings to the database.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An unexpected error occurred while processing the meter readings: {ex.Message}", ex);
+            }
         }
 
         public async Task DeleteAllMeterReadingsAsync()
         {
-            var meterReadings = await _context.MeterReadings.ToListAsync();
-            _context.MeterReadings.RemoveRange(meterReadings);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var meterReadings = await _context.MeterReadings.ToListAsync();
+                if (meterReadings == null || !meterReadings.Any())
+                {
+                    throw new InvalidOperationException("No meter readings to delete.");
+                }
+
+                _context.MeterReadings.RemoveRange(meterReadings);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new ApplicationException("Error deleting meter readings from the database.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred while deleting meter readings: {ex.Message}", ex);
+            }
         }
-    }    
+    }
 }

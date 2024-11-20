@@ -8,6 +8,7 @@ namespace EnergyCustomerAccountProcessorApi.Validation
     public class MeterReadingValidator : IMeterReadingValidator
     {
         private readonly EnergyContext _context;
+
         public MeterReadingValidator(EnergyContext context)
         {
             _context = context;
@@ -20,49 +21,61 @@ namespace EnergyCustomerAccountProcessorApi.Validation
                 return false;
             }
 
-            // Check for valid AccountId
-            var accountExists = await _context.Users.AnyAsync(u => u.AccountID == meterReading.AccountId);
+            // Validate AccountId
+            var accountExists = await IsAccountValidAsync(meterReading.AccountId);
             if (!accountExists)
             {
                 return false;
             }
 
-            // Validate MeterReadValue format (NNNNN)
-            if (!Regex.IsMatch(meterReading.MeterReadValue.ToString(), @"^\d{5}$"))
+            // Validate MeterReadValue format
+            if (!IsMeterReadingValueValid(meterReading.MeterReadValue.ToString()))
             {
                 return false;
             }
 
-            // Check if the meter reading already exists
+            // Save or update meter reading
+            var isSaved = await SaveOrUpdateMeterReadingAsync(meterReading);
+            return isSaved;
+        }
+
+        // Method to validate if account exists
+        private async Task<bool> IsAccountValidAsync(int accountId)
+        {
+            return await _context.Users.AnyAsync(u => u.AccountID == accountId);
+        }
+
+        // Method to validate MeterReadValue format
+        private bool IsMeterReadingValueValid(string meterReadValue)
+        {
+            return Regex.IsMatch(meterReadValue, @"^\d{5}$");
+        }
+
+        // Method to save or update meter reading in the database
+        private async Task<bool> SaveOrUpdateMeterReadingAsync(MeterReading meterReading)
+        {
             var existingMeterReading = await _context.MeterReadings
                 .FirstOrDefaultAsync(m => m.AccountId == meterReading.AccountId);
 
             if (existingMeterReading != null)
             {
-                // If found, update the existing record (e.g., update MeterReadValue)
                 existingMeterReading.MeterReadValue = meterReading.MeterReadValue;
-
-                // You can perform any other updates to the existing record here, if necessary
                 _context.MeterReadings.Update(existingMeterReading);
             }
             else
             {
-                // If not found, add a new record
                 await _context.MeterReadings.AddAsync(meterReading);
             }
 
             try
             {
-                // Save changes to the database
                 await _context.SaveChangesAsync();
+                return true;
             }
             catch
             {
-                // Log or handle the exception if necessary
                 return false;
             }
-
-            return true;
         }
     }
 }

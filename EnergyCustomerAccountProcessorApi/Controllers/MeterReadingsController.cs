@@ -13,34 +13,29 @@ namespace EnergyCustomerAccountProcessorApi.Controllers
     [ApiController]
     public class MeterReadingsController : ControllerBase
     {
-        private readonly EnergyContext _context;
         private readonly IMeterReadingService _meterReadingService;
 
-        public MeterReadingsController(EnergyContext context,IMeterReadingService meterReadingService)
+        public MeterReadingsController(IMeterReadingService meterReadingService)
         {
-            _context = context;
             _meterReadingService = meterReadingService;
         }
 
-        [HttpGet("get-all")]
+         [HttpGet("get-all")]
         public async Task<ActionResult<IEnumerable<MeterReading>>> GetMeterReadings()
         {
             try
             {
-                // Fetch all records from MeterReadings table
-                var meterReadings = await _context.MeterReadings.ToListAsync();
+                var meterReadings = await _meterReadingService.GetAllMeterReadingsAsync();
 
-                // If there are no records, return an empty list
                 if (meterReadings == null || !meterReadings.Any())
                 {
-                    return NoContent();  // Or return Ok(meterReadings); if you prefer empty list
+                    return NoContent();
                 }
 
-                return Ok(meterReadings); // Return the list of meter readings
+                return Ok(meterReadings);
             }
             catch (Exception ex)
             {
-                // Return a server error if something goes wrong
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -48,18 +43,25 @@ namespace EnergyCustomerAccountProcessorApi.Controllers
         [HttpPost("meter-reading-uploads")]
         public async Task<IActionResult> ProcessMeterReadings(IFormFile file)
         {
-            if (file == null || file.Length == 0)
+            try
             {
-                return BadRequest("A valid CSV file must be provided.");
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest("A valid CSV file must be provided.");
+                }
+
+                var (successCount, failureCount) = await _meterReadingService.ProcessMeterReadingsAsync(file);
+
+                return Ok(new
+                {
+                    SuccessCount = successCount,
+                    FailureCount = failureCount
+                });
             }
-
-            var (successCount, failureCount) = await _meterReadingService.ProcessMeterReadingsAsync(file);
-
-            return Ok(new
+            catch (Exception ex)
             {
-                SuccessCount = successCount,
-                FailureCount = failureCount
-            });
+                return StatusCode(500, $"An error occurred while processing the meter readings: {ex.Message}");
+            }
         }
 
         [HttpDelete("delete-all")]

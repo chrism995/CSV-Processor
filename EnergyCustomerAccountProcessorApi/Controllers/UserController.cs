@@ -21,5 +21,7 @@ namespace EnergyApi.Controllers
             var users = await _context.Users.ToListAsync();
             return Ok(users);
         }
+
+        
     }
 }
