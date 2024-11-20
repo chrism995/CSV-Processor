@@ -22,7 +22,29 @@ namespace EnergyCustomerAccountProcessorApi.Controllers
             _meterReadingService = meterReadingService;
         }
 
-        // POST: api/Energy/UploadMeterReadings
+        [HttpGet("get-all")]
+        public async Task<ActionResult<IEnumerable<MeterReading>>> GetMeterReadings()
+        {
+            try
+            {
+                // Fetch all records from MeterReadings table
+                var meterReadings = await _context.MeterReadings.ToListAsync();
+
+                // If there are no records, return an empty list
+                if (meterReadings == null || !meterReadings.Any())
+                {
+                    return NoContent();  // Or return Ok(meterReadings); if you prefer empty list
+                }
+
+                return Ok(meterReadings); // Return the list of meter readings
+            }
+            catch (Exception ex)
+            {
+                // Return a server error if something goes wrong
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+        
         [HttpPost("meter-reading-uploads")]
         public async Task<IActionResult> ProcessMeterReadings(IFormFile file)
         {
@@ -38,6 +60,20 @@ namespace EnergyCustomerAccountProcessorApi.Controllers
                 SuccessCount = successCount,
                 FailureCount = failureCount
             });
+        }
+
+        [HttpDelete("delete-all")]
+        public async Task<IActionResult> DeleteAllMeterReadings()
+        {
+            try
+            {
+                await _meterReadingService.DeleteAllMeterReadingsAsync();
+                return Ok("All meter readings have been deleted.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error: {ex.Message}");
+            }
         }
     }
 }

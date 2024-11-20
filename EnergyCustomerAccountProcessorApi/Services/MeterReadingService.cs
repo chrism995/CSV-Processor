@@ -44,13 +44,33 @@ namespace EnergyCustomerAccountProcessorApi.Services
 
             foreach (var record in records)
             {
-                // Validate each record asynchronously
+                // Validate each record
                 if (await _validator.ValidateMeterReadingAsync(record))
                 {
-                    _context.MeterReadings.Add(record);
-                    successCount++;
+                    var existingMeterReading = await _context.MeterReadings
+                        .FirstOrDefaultAsync(m => m.AccountId == record.AccountId);
+
+                    if (existingMeterReading == null)
+                    {
+                        // Add new record if it doesn't exist
+                        _context.MeterReadings.Add(record);
+                        successCount++; 
+                    }
+                    else if (record.MeterReadingDateTime > existingMeterReading.MeterReadingDateTime)
+                    {
+                        
+                        existingMeterReading.MeterReadValue = record.MeterReadValue;
+                        existingMeterReading.MeterReadingDateTime = record.MeterReadingDateTime;
+                        _context.MeterReadings.Update(existingMeterReading);
+                        successCount++; 
+                    }
+                    else
+                    {
+                        // If the new date is older, treat it as a failure
+                        failureCount++;
+                    }
                 }
-                else
+                else                                                                                                                    
                 {
                     failureCount++;
                 }
@@ -58,6 +78,13 @@ namespace EnergyCustomerAccountProcessorApi.Services
 
             await _context.SaveChangesAsync();
             return (successCount, failureCount);
+        }
+
+        public async Task DeleteAllMeterReadingsAsync()
+        {
+            var meterReadings = await _context.MeterReadings.ToListAsync();
+            _context.MeterReadings.RemoveRange(meterReadings);
+            await _context.SaveChangesAsync();
         }
     }    
 }

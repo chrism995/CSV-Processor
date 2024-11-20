@@ -158,3 +158,4 @@ C:\repos\CSV Processor\EnergyCustomerAccountProcessorApi\obj\Debug\net8.0\refint
 C:\repos\CSV Processor\EnergyCustomerAccountProcessorApi\obj\Debug\net8.0\EnergyCustomerAccountProcessorApi.pdb
 C:\repos\CSV Processor\EnergyCustomerAccountProcessorApi\obj\Debug\net8.0\EnergyCustomerAccountProcessorApi.genruntimeconfig.cache
 C:\repos\CSV Processor\EnergyCustomerAccountProcessorApi\obj\Debug\net8.0\ref\EnergyCustomerAccountProcessorApi.dll
+C:\repos\CSV Processor\EnergyCustomerAccountProcessorApi\obj\Debug\net8.0\EnergyCustomerAccountProcessorApi.sourcelink.json

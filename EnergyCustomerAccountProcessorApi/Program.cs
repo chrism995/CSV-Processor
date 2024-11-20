@@ -20,17 +20,6 @@ builder.Services.AddScoped<UserSeeder>();
 
 var app = builder.Build();
 
-// Ensure the database is created and migrate any pending changes.
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<EnergyContext>();
-    var seeder = services.GetRequiredService<UserSeeder>();
-
-    await context.Database.MigrateAsync();  // Apply any pending migrations
-    await seeder.SeedUsersAsync("accounts.csv");  // Seed the users
-}
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
